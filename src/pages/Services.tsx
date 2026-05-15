@@ -1,0 +1,82 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Service } from '../types';
+import { supabase } from '../lib/supabase';
+
+const Services: React.FC = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching services:', error);
+      } else if (data) {
+        setServices(data);
+      }
+      setLoading(false);
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        我們的服務
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.length === 0 ? (
+          <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-2xl shadow">
+            <p className="text-gray-500 dark:text-gray-400">目前尚無服務項目。</p>
+          </div>
+        ) : (
+          services.map((service) => (
+            <div
+              key={service.id}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow"
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  {service.name}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 h-12 overflow-hidden">
+                  {service.description}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-2xl font-bold text-indigo-600">
+                    ${service.price}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {service.duration} 分鐘
+                  </span>
+                </div>
+                <Link
+                  to={`/booking?serviceId=${service.id}`}
+                  className="mt-6 block w-full text-center py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  立即預約
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Services;
