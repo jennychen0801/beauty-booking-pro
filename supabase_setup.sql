@@ -90,8 +90,16 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, avatar_url, role)
   VALUES (
     new.id,
-    COALESCE(new.raw_user_meta_data->>'full_name', ''),
-    COALESCE(new.raw_user_meta_data->>'avatar_url', ''),
+    COALESCE(
+      new.raw_user_meta_data->>'full_name', 
+      new.raw_user_meta_data->>'name', 
+      ''
+    ),
+    COALESCE(
+      new.raw_user_meta_data->>'avatar_url', 
+      new.raw_user_meta_data->>'picture', 
+      ''
+    ),
     'customer'
   );
   RETURN new;

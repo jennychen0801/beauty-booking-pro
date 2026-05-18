@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthProvider'
 import { useAuth } from './hooks/useAuth'
 import { Toaster } from 'react-hot-toast'
 import Login from './pages/Login'
+import AuthCallback from './pages/AuthCallback'
 import Home from './pages/Home'
 import Services from './pages/Services'
 import Booking from './pages/Booking'
@@ -25,20 +26,43 @@ function Navbar() {
             服務項目
           </Link>
           {user ? (
-            <>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex flex-col items-end">
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                </span>
+                <span className="text-xs text-gray-500 uppercase">{user.role}</span>
+              </div>
+              
+              {user.user_metadata?.avatar_url ? (
+                <img 
+                  src={user.user_metadata.avatar_url} 
+                  alt="Avatar" 
+                  className="w-10 h-10 rounded-full border border-indigo-100"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                  {(user.user_metadata?.full_name || user.email)?.[0].toUpperCase()}
+                </div>
+              )}
+
+              <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+
               <Link to="/my-bookings" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600">
                 我的預約
               </Link>
-              <Link to="/admin" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600">
-                管理後台
-              </Link>
+              {user.role === 'admin' && (
+                <Link to="/admin" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600">
+                  管理後台
+                </Link>
+              )}
               <button
                 onClick={() => supabase.auth.signOut()}
                 className="text-sm font-medium text-red-600 hover:text-red-700"
               >
                 登出
               </button>
-            </>
+            </div>
           ) : (
             <Link to="/login" className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium">
               登入
@@ -61,6 +85,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/booking" element={<Booking />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
