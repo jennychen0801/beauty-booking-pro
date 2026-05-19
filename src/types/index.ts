@@ -1,5 +1,32 @@
+export interface Beautician {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+  specialties: string[];
+  experience_years: number;
+  bio: string;
+  rating: number;
+  created_at: string;
+  services?: Service[];
+  reviews?: Review[];
+}
+
+export interface Review {
+  id: string;
+  beautician_id: string;
+  user_id?: string;
+  customer_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  profiles?: {
+    full_name: string;
+  };
+}
+
 export interface Service {
   id: string;
+  beautician_id?: string;
   name: string;
   description: string;
   price: number;
@@ -13,6 +40,7 @@ export interface Booking {
   customer_name: string;
   service_name: string;
   service_id: string;
+  beautician_id?: string;
   scheduled_at: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   user_id: string;
