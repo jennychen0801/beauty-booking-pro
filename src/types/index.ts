@@ -12,6 +12,7 @@ export interface Booking {
   id: string;
   customer_name: string;
   service_name: string;
+  service_id: string;
   scheduled_at: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   user_id: string;

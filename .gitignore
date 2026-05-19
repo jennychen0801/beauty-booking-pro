@@ -1,6 +1,7 @@
 # Logs
 logs
 *.log
+profiles_rows.csv
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
