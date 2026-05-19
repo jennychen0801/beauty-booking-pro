@@ -55,10 +55,17 @@ const Booking: React.FC = () => {
     }
 
     setLoading(true);
+    
+    // 關鍵修正：確保寫入資料庫的時間字串帶有時區資訊 (Z)
+    // HTML datetime-local 的 value 是 "YYYY-MM-DDTHH:mm"，不帶時區。
+    // 直接 new Date(value).toISOString() 會將該本地時間轉換為正確的 UTC 格式並加上 "Z"。
+    const isoScheduledAt = new Date(scheduledAt).toISOString();
+
     const { error } = await supabase.from('bookings').insert({
       customer_name: customerName,
       service_name: service.name,
-      scheduled_at: scheduledAt,
+      service_id: service.id, // 確保關聯 ID
+      scheduled_at: isoScheduledAt,
       user_id: user.id,
       status: 'pending'
     });

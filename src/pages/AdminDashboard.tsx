@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../hooks/useAdmin';
 import { supabase } from '../lib/supabase';
@@ -62,52 +62,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'bookings' | 'services'>('bookings');
   const [filter, setFilter] = useState('all');
 
-  // Authorization check
-  useEffect(() => {
-    if (!adminLoading && isAdmin === false) {
-      toast.error('無管理員權限');
-      navigate('/');
-    }
-  }, [isAdmin, adminLoading, navigate]);
-
-  const fetchData = async () => {
-    // Fetch all bookings for management and stats
-    const { data: bookingsData } = await supabase
-      .from('bookings')
-      .select('*')
-      .order('scheduled_at', { ascending: false });
-
-    // Fetch services
-    const { data: servicesData } = await supabase
-      .from('services')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (bookingsData) setBookings(bookingsData);
-    if (servicesData) setServices(servicesData);
-    
-    if (bookingsData) {
-      calculateStats(bookingsData);
-    }
-  };
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchData();
-
-      // Real-time subscription
-      const channel = supabase
-        .channel('admin-dashboard')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-          fetchData();
-        })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
-    }
-  }, [isAdmin]);
-
-  const calculateStats = (data: Booking[]) => {
+  const calculateStats = useCallback((data: Booking[]) => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     
@@ -140,7 +95,52 @@ const AdminDashboard: React.FC = () => {
       });
     }
     setTrendData(trend);
-  };
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    // Fetch all bookings for management and stats
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('scheduled_at', { ascending: false });
+
+    // Fetch services
+    const { data: servicesData } = await supabase
+      .from('services')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (bookingsData) setBookings(bookingsData);
+    if (servicesData) setServices(servicesData);
+    
+    if (bookingsData) {
+      calculateStats(bookingsData);
+    }
+  }, [calculateStats]);
+
+  // Authorization check
+  useEffect(() => {
+    if (!adminLoading && isAdmin === false) {
+      toast.error('無管理員權限');
+      navigate('/');
+    }
+  }, [isAdmin, adminLoading, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchData();
+
+      // Real-time subscription
+      const channel = supabase
+        .channel('admin-dashboard')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+          fetchData();
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
+    }
+  }, [isAdmin, fetchData]);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     const { error } = await supabase
