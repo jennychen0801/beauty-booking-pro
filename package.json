@@ -16,10 +16,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
-<<<<<<< HEAD
-=======
     "lucide-react": "^1.16.0",
->>>>>>> feature/beautician-profile
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
