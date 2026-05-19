@@ -27,8 +27,8 @@ const Booking: React.FC = () => {
         setFetchingData(false);
         return;
       }
-      
-      // 1. 獲取服務資訊
+
+      // 1. 獲取當前選擇的服務資訊
       const { data: serviceData, error: sError } = await supabase
         .from('services')
         .select('*')
@@ -42,24 +42,38 @@ const Booking: React.FC = () => {
       }
       setService(serviceData);
 
-      // 2. 獲取所有美容師供選擇
-      const { data: bData, error: bError } = await supabase
-        .from('beauticians')
-        .select('*');
+      // 2. 獲取所有提供「同名服務」的美容師
+      const { data: sData, error: bError } = await supabase
+        .from('services')
+        .select('beautician_id, beauticians(*)')
+        .eq('name', serviceData.name);
 
-      if (!bError && bData) {
-        setAvailableBeauticians(bData);
-        // 如果 URL 沒帶 ID，且只有一位美容師，自動選中
-        if (!initialBeauticianId && bData.length === 1) {
-          setSelectedBeauticianId(bData[0].id);
+      if (!bError && sData) {
+        // 提取美容師資訊並去重 (雖然理論上一個美容師只會提供一個同名服務，但保險起見)
+        const beauticians: Beautician[] = sData
+          .filter(item => item.beauticians)
+          .map(item => (Array.isArray(item.beauticians) ? item.beauticians[0] : item.beauticians));
+
+        setAvailableBeauticians(beauticians);
+
+        // 如果 URL 有指定 ID，且該 ID 在可用名單中，則預選
+        if (initialBeauticianId && beauticians.some(b => b.id === initialBeauticianId)) {
+          setSelectedBeauticianId(initialBeauticianId);
+        } else if (beauticians.length === 1) {
+          // 如果只有一位，自動選中
+          setSelectedBeauticianId(beauticians[0].id);
+        } else if (!initialBeauticianId && serviceData.beautician_id) {
+          // 預設選中該服務原本關聯的美容師
+          setSelectedBeauticianId(serviceData.beautician_id);
         }
       }
-      
+
       setFetchingData(false);
     };
 
     fetchData();
   }, [serviceId, initialBeauticianId]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

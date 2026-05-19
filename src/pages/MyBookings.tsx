@@ -5,26 +5,43 @@ import { supabase } from '../lib/supabase';
 import { Booking } from '../types';
 import { formatDate, canModifyBooking } from '../lib/utils';
 import ModifyBookingModal from '../components/ModifyBookingModal';
+import ReviewModal from '../components/ReviewModal';
+import toast from 'react-hot-toast';
+
+interface BookingWithReview extends Booking {
+  reviews?: { id: string }[];
+}
 
 const MyBookings: React.FC = () => {
   const { user } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingWithReview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingWithReview | null>(null);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   
   useRealtimeNotifications('customer', user?.id);
 
   const fetchBookings = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('MyBookings: No user found in context');
+      return;
+    }
+    
     setLoading(true);
+    console.log('MyBookings: Fetching bookings for user', user.id);
+    
     const { data, error } = await supabase
       .from('bookings')
-      .select('*')
+      .select('*, reviews(id)')
       .eq('user_id', user.id)
-      .order('scheduled_at', { ascending: false });
+      .order('created_at', { ascending: false }); // 改用建立時間排序，更直觀
     
-    if (!error && data) {
+    if (error) {
+      console.error('MyBookings: Error fetching bookings:', error);
+      toast.error('無法取得預約紀錄: ' + error.message);
+    } else if (data) {
+      console.log('MyBookings: Data received:', data);
       setBookings(data);
     }
     setLoading(false);
@@ -34,9 +51,14 @@ const MyBookings: React.FC = () => {
     fetchBookings();
   }, [fetchBookings]);
 
-  const handleOpenModifyModal = (booking: Booking) => {
+  const handleOpenModifyModal = (booking: BookingWithReview) => {
     setSelectedBooking(booking);
     setIsModifyModalOpen(true);
+  };
+
+  const handleOpenReviewModal = (booking: BookingWithReview) => {
+    setSelectedBooking(booking);
+    setIsReviewModalOpen(true);
   };
 
   return (
@@ -57,6 +79,8 @@ const MyBookings: React.FC = () => {
         <div className="grid gap-6">
           {bookings.map((booking) => {
             const modifiable = (booking.status === 'pending' || booking.status === 'confirmed') && canModifyBooking(booking.scheduled_at);
+            const isCompleted = booking.status === 'confirmed' && new Date(booking.scheduled_at) < new Date();
+            const hasReviewed = (booking.reviews?.length || 0) > 0;
             
             return (
               <div
@@ -74,10 +98,10 @@ const MyBookings: React.FC = () => {
                       booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                       'bg-yellow-100 text-yellow-700'
                     }`}>
-                      {booking.status === 'confirmed' ? '已確認' :
+                      {booking.status === 'confirmed' ? (isCompleted ? '服務已完成' : '已確認') :
                        booking.status === 'cancelled' ? '已取消' : '待確認'}
                     </span>
-                    {!modifiable && (booking.status === 'pending' || booking.status === 'confirmed') && (
+                    {!modifiable && !isCompleted && (booking.status === 'pending' || booking.status === 'confirmed') && (
                       <p className="text-[10px] text-gray-400 mt-1">預約前 24 小時內不可修改</p>
                     )}
                   </div>
@@ -90,6 +114,19 @@ const MyBookings: React.FC = () => {
                       修改預約
                     </button>
                   )}
+
+                  {isCompleted && !hasReviewed && (
+                    <button
+                      onClick={() => handleOpenReviewModal(booking)}
+                      className="px-4 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-sm font-medium transition-colors border border-amber-200"
+                    >
+                      留下評價
+                    </button>
+                  )}
+
+                  {isCompleted && hasReviewed && (
+                    <span className="text-sm text-gray-400 font-medium italic">已評價</span>
+                  )}
                 </div>
               </div>
             );
@@ -97,11 +134,21 @@ const MyBookings: React.FC = () => {
         </div>
       )}
 
-      {selectedBooking && (
+      {selectedBooking && isModifyModalOpen && (
         <ModifyBookingModal
           booking={selectedBooking}
           isOpen={isModifyModalOpen}
           onClose={() => setIsModifyModalOpen(false)}
+          onSuccess={fetchBookings}
+        />
+      )}
+
+      {selectedBooking && isReviewModalOpen && selectedBooking.beautician_id && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          bookingId={selectedBooking.id}
+          beauticianId={selectedBooking.beautician_id}
           onSuccess={fetchBookings}
         />
       )}

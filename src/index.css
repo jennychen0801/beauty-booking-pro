@@ -4,31 +4,28 @@
 
 @layer base {
   :root {
-    --brand-pink: #fdf2f8;
-    --brand-gold: #fbbf24;
-    --brand-gold-dark: #b45309;
+    --brand-gold: #ca8a04;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-[#fffafb] text-gray-800 antialiased;
+    @apply bg-white text-gray-950 antialiased transition-colors duration-300;
     margin: 0;
-    display: block; /* Remove place-items: center */
     min-width: 320px;
     min-height: 100vh;
+  }
+
+  .dark body {
+    @apply bg-gray-950 text-white;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/70 backdrop-blur-md border border-white/30 shadow-xl shadow-rose-100/50;
-  }
-  
-  .btn-gold {
-    @apply bg-gradient-to-r from-amber-200 to-yellow-400 text-amber-900 px-8 py-3 rounded-full font-semibold shadow-lg shadow-amber-200/50 hover:scale-105 transition-transform;
-  }
-
-  .text-glow {
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/30 dark:border-gray-800/30 shadow-xl;
   }
 }
 
@@ -40,4 +37,13 @@
   0% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
   100% { transform: translateY(0px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s ease-in-out infinite;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
 }

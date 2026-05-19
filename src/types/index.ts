@@ -6,6 +6,7 @@ export interface Beautician {
   experience_years: number;
   bio: string;
   rating: number;
+  review_count: number; // 新增：評價總數
   created_at: string;
   services?: Service[];
   reviews?: Review[];

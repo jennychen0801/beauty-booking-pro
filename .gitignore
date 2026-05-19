@@ -1,7 +1,10 @@
 # Logs
 logs
 *.log
+
 profiles_rows.csv
+beauticians_rows (+4).csv
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
