@@ -9,6 +9,7 @@ import Services from './pages/Services'
 import Booking from './pages/Booking'
 import MyBookings from './pages/MyBookings'
 import AdminDashboard from './pages/AdminDashboard'
+import BeauticianProfile from './pages/BeauticianProfile'
 import ProtectedRoute from './components/ProtectedRoute'
 import { supabase } from './lib/supabase'
 
@@ -84,6 +85,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
+              <Route path="/beautician/:id" element={<BeauticianProfile />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route element={<ProtectedRoute />}>

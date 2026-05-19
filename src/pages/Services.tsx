@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Service } from '../types';
+import { Service, Beautician } from '../types';
 import { supabase } from '../lib/supabase';
+import { User } from 'lucide-react';
+
+interface ServiceWithBeautician extends Service {
+  beauticians?: {
+    full_name: string;
+    id: string;
+  };
+}
 
 const Services: React.FC = () => {
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<ServiceWithBeautician[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServices = async () => {
       const { data, error } = await supabase
         .from('services')
-        .select('*')
+        .select('*, beauticians(id, full_name)')
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -47,29 +55,45 @@ const Services: React.FC = () => {
           services.map((service) => (
             <div
               key={service.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow flex flex-col"
             >
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  {service.name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4 h-12 overflow-hidden">
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {service.name}
+                  </h3>
+                </div>
+                
+                {service.beauticians && (
+                  <Link 
+                    to={`/beautician/${service.beauticians.id}`}
+                    className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-3 hover:underline"
+                  >
+                    <User className="w-3 h-3" />
+                    美容師：{service.beauticians.full_name}
+                  </Link>
+                )}
+
+                <p className="text-gray-600 dark:text-gray-400 mb-4 h-12 overflow-hidden text-sm">
                   {service.description}
                 </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-indigo-600">
-                    ${service.price}
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {service.duration} 分鐘
-                  </span>
+                
+                <div className="mt-auto">
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-2xl font-bold text-indigo-600">
+                      ${service.price}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {service.duration} 分鐘
+                    </span>
+                  </div>
+                  <Link
+                    to={`/booking?serviceId=${service.id}${service.beauticians ? `&beauticianId=${service.beauticians.id}` : ''}`}
+                    className="block w-full text-center py-2.5 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                  >
+                    立即預約
+                  </Link>
                 </div>
-                <Link
-                  to={`/booking?serviceId=${service.id}`}
-                  className="mt-6 block w-full text-center py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  立即預約
-                </Link>
               </div>
             </div>
           ))

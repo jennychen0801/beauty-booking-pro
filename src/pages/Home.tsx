@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { Beautician } from '../types';
+import { Star, User } from 'lucide-react';
 
 interface ServiceCardProps {
   title: string;
@@ -27,6 +30,32 @@ const ServiceCard = ({ title, price, duration, image }: ServiceCardProps) => (
   </div>
 );
 
+const BeauticianCard = ({ beautician }: { beautician: Beautician }) => (
+  <Link to={`/beautician/${beautician.id}`} className="block group">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 text-center">
+      <div className="relative inline-block mb-4">
+        <img
+          src={beautician.avatar_url || 'https://via.placeholder.com/150'}
+          alt={beautician.full_name}
+          className="w-24 h-24 rounded-full object-cover border-4 border-rose-50 dark:border-indigo-900/30 group-hover:scale-105 transition-transform"
+        />
+        <div className="absolute -bottom-1 -right-1 bg-amber-400 text-white p-1 rounded-full shadow-lg">
+          <Star className="w-3 h-3 fill-current" />
+        </div>
+      </div>
+      <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-rose-500 transition-colors">{beautician.full_name}</h3>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{beautician.experience_years}年經驗</p>
+      <div className="mt-3 flex flex-wrap justify-center gap-1">
+        {beautician.specialties.slice(0, 2).map((s, idx) => (
+          <span key={idx} className="text-[10px] px-2 py-0.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-full font-medium">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+  </Link>
+);
+
 interface TestimonialCardProps {
   name: string;
   content: string;
@@ -45,6 +74,16 @@ const TestimonialCard = ({ name, content, avatar }: TestimonialCardProps) => (
 );
 
 const Home: React.FC = () => {
+  const [beauticians, setBeauticians] = useState<Beautician[]>([]);
+
+  useEffect(() => {
+    const fetchBeauticians = async () => {
+      const { data } = await supabase.from('beauticians').select('*').limit(4);
+      if (data) setBeauticians(data);
+    };
+    fetchBeauticians();
+  }, []);
+
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -123,6 +162,21 @@ const Home: React.FC = () => {
           <Link to="/services" className="mt-12 inline-block text-rose-500 font-bold hover:text-rose-600 transition-colors">
             查看所有服務表單 →
           </Link>
+        </div>
+      </section>
+
+      {/* Beautician Section */}
+      <section className="py-24 bg-rose-50/20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">專業美容師團隊</h2>
+            <p className="text-gray-500">專業背景與豐富經驗，為您的美麗把關。</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {beauticians.map(b => (
+              <BeauticianCard key={b.id} beautician={b} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -210,8 +264,8 @@ const Home: React.FC = () => {
               僅需 30 秒，即可完成線上預約。我們會根據您的膚況，提供最專業的分析建議。
             </p>
             <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
-              <Link to="/booking" className="btn-gold scale-125">
-                立即預約我的時段
+              <Link to="/services" className="btn-gold scale-125">
+                立即挑選服務項目
               </Link>
             </div>
             <p className="mt-12 text-sm text-amber-800 font-medium">
