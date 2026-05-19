@@ -38,10 +38,15 @@ const ModifyBookingModal: React.FC<ModifyBookingModalProps> = ({ booking, isOpen
       .eq('name', booking.service_name);
 
     if (!error && data) {
-      const options: BeauticianOption[] = data.map(item => ({
-        ...item.beauticians,
-        target_service_id: item.id
-      }));
+      const options: BeauticianOption[] = data
+        .filter(item => item.beauticians)
+        .map(item => {
+          const b = Array.isArray(item.beauticians) ? item.beauticians[0] : item.beauticians;
+          return {
+            ...b,
+            target_service_id: item.id
+          };
+        });
       setAvailableBeauticians(options);
     }
   }, [booking.service_name]);

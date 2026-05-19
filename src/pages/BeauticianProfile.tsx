@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Beautician, Service, Review } from '../types';
-import { Star, Clock, Award, CheckCircle, ChevronRight, MessageSquare } from 'lucide-react';
+import { Star, Clock, Award, CheckCircle, ChevronRight, MessageSquare, User } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import toast from 'react-hot-toast';
 
