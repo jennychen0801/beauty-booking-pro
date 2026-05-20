@@ -23,8 +23,7 @@ const BeauticianProfile: React.FC = () => {
             services (*)
           ),
           reviews (
-            *,
-            profiles (full_name)
+            *
           )
         `)
         .eq('id', id)
