@@ -88,8 +88,8 @@ const Home: React.FC = () => {
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-gold-200/30 dark:bg-gold-900/10 rounded-full blur-[100px] animate-pulse" />
         <div className="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-white dark:from-gray-950 to-transparent -z-10" />
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-          <div className="relative z-10 space-y-10 animate-in fade-in slide-in-from-left-12 duration-1000">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center min-h-[85vh]">
+          <div className="relative z-20 space-y-10 animate-in fade-in slide-in-from-left-12 duration-1000">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-px w-12 bg-gold-600" />
@@ -129,25 +129,20 @@ const Home: React.FC = () => {
             </div>
           </div>
           
-          <div className="relative group animate-in fade-in zoom-in duration-1000 delay-300">
+          <div className="relative group animate-in fade-in zoom-in duration-1000 delay-300 z-10 lg:mt-0 mt-12">
             <div className="absolute inset-0 bg-gold-600/10 rounded-[4rem] rotate-3 scale-105 -z-10 group-hover:rotate-0 transition-transform duration-700" />
             <div className="relative aspect-[4/5] rounded-[3.5rem] overflow-hidden shadow-2xl shadow-gold-900/20">
               <img 
-                src="https://images.unsplash.com/photo-1544161515-436ce9d40ffc?auto=format&fit=crop&q=80&w=1600" 
-                alt="Luxury Spa Interior" 
+                src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&q=80&w=1600" 
+                alt="Luxury Spa Treatment" 
                 className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-950/60 to-transparent" />
-              <div className="absolute bottom-10 left-10 right-10 p-8 backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl text-white">
-                <p className="text-xs font-black uppercase tracking-[0.3em] mb-2 text-gold-400">Featured Service</p>
-                <h3 className="text-2xl font-luxury font-bold">極致水光潤澤管理</h3>
-                <p className="text-sm font-light text-gray-300 mt-2">Deep hydration and radiance for a timeless glow.</p>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             </div>
             
             {/* Floating Badges */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white dark:bg-gray-900 rounded-full shadow-2xl flex flex-col items-center justify-center border border-gray-50 dark:border-gray-800 animate-bounce-slow">
-              <Sparkles className="text-gold-600 mb-1" size={24} />
+            <div className="absolute -top-6 -right-6 w-28 h-28 bg-white dark:bg-gray-900 rounded-full shadow-2xl flex flex-col items-center justify-center border border-gray-50 dark:border-gray-800 animate-bounce-slow z-20">
+              <Sparkles className="text-gold-600 mb-0.5" size={20} />
               <p className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tighter">Premium</p>
               <p className="text-[8px] text-gold-600 font-bold uppercase">Certified</p>
             </div>
@@ -155,14 +150,25 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900/50 border-y border-gray-100 dark:border-gray-900">
+      {/* Trust Bar - Enhanced Visibility */}
+      <section className="py-24 bg-gray-50/50 dark:bg-gray-950 border-y border-gray-100 dark:border-gray-900">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-wrap justify-center md:justify-between items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-            <h2 className="text-2xl font-luxury font-bold italic text-gray-400">LUXURY SPA</h2>
-            <h2 className="text-2xl font-luxury font-bold italic text-gray-400">VOGUE BEAUTY</h2>
-            <h2 className="text-2xl font-luxury font-bold italic text-gray-400">ELITE WELLNESS</h2>
-            <h2 className="text-2xl font-luxury font-bold italic text-gray-400">PREMIUM CARE</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 items-center">
+            {[
+              { name: 'VOGUE', sub: 'Beauty Choice' },
+              { name: 'ELLE', sub: 'Luxury Award' },
+              { name: 'BAZAAR', sub: 'Best Esthetics' },
+              { name: 'L\'OFFICIEL', sub: 'Elite Spa' }
+            ].map((brand, i) => (
+              <div key={i} className="flex flex-col items-center group cursor-default">
+                <span className="text-2xl md:text-3xl font-luxury font-bold tracking-[0.2em] text-gray-300 dark:text-gray-700 group-hover:text-gold-600 transition-colors duration-500">
+                  {brand.name}
+                </span>
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-600 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-2 group-hover:translate-y-0">
+                  {brand.sub}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -227,61 +233,6 @@ const Home: React.FC = () => {
             {beauticians.map(b => (
               <BeauticianCard key={b.id} beautician={b} />
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <img src="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&q=80&w=800" alt="Spa Detail" className="rounded-3xl shadow-xl hover:scale-105 transition-transform duration-500" />
-                <div className="bg-gold-600 p-8 rounded-3xl text-white">
-                  <ShieldCheck size={32} className="mb-4" />
-                  <h4 className="text-xl font-luxury font-bold mb-2">極致品質保證</h4>
-                  <p className="text-xs text-white/80 leading-relaxed font-light">所有護理產品均採用全球頂級奢華品牌，確保純淨、安全且高效。</p>
-                </div>
-              </div>
-              <div className="space-y-6 pt-12">
-                <div className="bg-gray-950 p-8 rounded-3xl text-white">
-                  <Sparkles size={32} className="text-gold-500 mb-4" />
-                  <h4 className="text-xl font-luxury font-bold mb-2">量身定制方案</h4>
-                  <p className="text-xs text-gray-400 leading-relaxed font-light">根據每位顧客的獨特膚質，精準規劃個人化美學管理路徑。</p>
-                </div>
-                <img src="https://images.unsplash.com/photo-1512290902248-37d42079148d?auto=format&fit=crop&q=80&w=800" alt="Spa Detail" className="rounded-3xl shadow-xl hover:scale-105 transition-transform duration-500" />
-              </div>
-            </div>
-            
-            <div className="space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="h-px w-12 bg-gold-600" />
-                <span className="text-xs font-bold text-gold-600 uppercase tracking-widest">Why Choose Us</span>
-              </div>
-              <h2 className="text-5xl font-luxury font-bold text-gray-950 dark:text-white leading-tight">定義美學的新高度</h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-                我們不僅僅提供美容服務，更是您身心靈放鬆的避風港。每一處細節，從溫度的調控到香氛的選擇，皆為展現純粹的奢華。
-              </p>
-              <ul className="space-y-4">
-                {[
-                  '五星級酒店等級靜謐環境',
-                  '全球頂級醫學美學護膚品牌',
-                  '獨家研發高滲透肌底修護技術',
-                  '預約制一對一尊榮管家服務'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 text-gray-900 dark:text-gray-200">
-                    <CheckCircle2 className="text-gold-600 flex-shrink-0" size={20} />
-                    <span className="font-medium text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-6">
-                <Link to="/services" className="inline-flex items-center gap-3 text-sm font-black uppercase tracking-widest text-gold-600 hover:text-gold-700 transition-colors">
-                  了解更多品牌理念 <ArrowRight size={18} />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>

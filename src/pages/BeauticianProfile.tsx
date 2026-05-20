@@ -19,7 +19,9 @@ const BeauticianProfile: React.FC = () => {
         .from('beauticians')
         .select(`
           *,
-          services (*),
+          beautician_services (
+            services (*)
+          ),
           reviews (
             *,
             profiles (full_name)
@@ -70,6 +72,8 @@ const BeauticianProfile: React.FC = () => {
   }
 
   if (!beautician) return null;
+
+  const services = beautician.beautician_services?.map(bs => bs.services) || [];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-20">
@@ -140,7 +144,7 @@ const BeauticianProfile: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {beautician.services?.map((service) => (
+              {services.map((service) => (
                 <div key={service.id} className="group bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/10 dark:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-luxury font-bold text-gray-950 dark:text-white group-hover:text-gold-600 transition-colors">{service.name}</h3>
@@ -163,7 +167,7 @@ const BeauticianProfile: React.FC = () => {
                   </div>
                 </div>
               ))}
-              {(!beautician.services || beautician.services.length === 0) && (
+              {services.length === 0 && (
                 <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-gray-900/30 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-gray-800">
                   <p className="text-gray-400 font-luxury italic">目前暫無可預約服務</p>
                 </div>

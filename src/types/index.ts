@@ -6,9 +6,11 @@ export interface Beautician {
   experience_years: number;
   bio: string;
   rating: number;
-  review_count: number; // 新增：評價總數
+  review_count: number;
   created_at: string;
-  services?: Service[];
+  beautician_services?: {
+    services: Service;
+  }[];
   reviews?: Review[];
 }
 
@@ -27,13 +29,15 @@ export interface Review {
 
 export interface Service {
   id: string;
-  beautician_id?: string;
   name: string;
   description: string;
   price: number;
   duration: number; // in minutes
   is_active: boolean;
   image_url?: string;
+  beautician_services?: {
+    beauticians: Beautician;
+  }[];
 }
 
 export interface Booking {
@@ -41,10 +45,18 @@ export interface Booking {
   customer_name: string;
   service_name: string;
   service_id: string;
-  beautician_id?: string;
+  beautician_id: string;
   scheduled_at: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   user_id: string;
+  created_at: string;
+}
+
+export interface TimeSlot {
+  id: string;
+  beautician_id: string;
+  slot_time: string;
+  is_booked: boolean;
   created_at: string;
 }
 

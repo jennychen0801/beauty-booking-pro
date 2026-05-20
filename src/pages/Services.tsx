@@ -4,62 +4,33 @@ import { Service, Beautician } from '../types';
 import { supabase } from '../lib/supabase';
 import { User, Check } from 'lucide-react';
 
-interface ServiceWithBeautician extends Service {
-  beauticians?: {
-    full_name: string;
-    id: string;
-  };
-}
-
-interface ServiceGroup {
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  beauticians: {
-    id: string;
-    full_name: string;
-    avatar_url?: string;
-    service_id: string;
+interface ServiceWithBeauticians extends Service {
+  beautician_services: {
+    beauticians: Beautician;
   }[];
 }
 
 const Services: React.FC = () => {
-  const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
+  const [services, setServices] = useState<ServiceWithBeauticians[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServices = async () => {
       const { data, error } = await supabase
         .from('services')
-        .select('*, beauticians(id, full_name, avatar_url)')
+        .select(`
+          *,
+          beautician_services(
+            beauticians(id, full_name, avatar_url)
+          )
+        `)
+        .eq('is_active', true)
         .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching services:', error);
       } else if (data) {
-        // Group services by name
-        const groups: { [key: string]: ServiceGroup } = {};
-        data.forEach((item: any) => {
-          if (!groups[item.name]) {
-            groups[item.name] = {
-              name: item.name,
-              description: item.description,
-              price: item.price,
-              duration: item.duration,
-              beauticians: []
-            };
-          }
-          if (item.beauticians) {
-            groups[item.name].beauticians.push({
-              id: item.beauticians.id,
-              full_name: item.beauticians.full_name,
-              avatar_url: item.beauticians.avatar_url,
-              service_id: item.id
-            });
-          }
-        });
-        setServiceGroups(Object.values(groups));
+        setServices(data as ServiceWithBeauticians[]);
       }
       setLoading(false);
     };
@@ -91,49 +62,49 @@ const Services: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {serviceGroups.length === 0 ? (
+        {services.length === 0 ? (
           <div className="col-span-full text-center py-32 bg-gray-50 dark:bg-gray-900/50 rounded-[3rem] border border-dashed border-gray-200 dark:border-gray-800">
             <p className="text-gray-400 font-luxury italic text-xl">目前尚無服務項目，敬請期待。</p>
           </div>
         ) : (
-          serviceGroups.map((group) => (
+          services.map((service) => (
             <div
-              key={group.name}
+              key={service.id}
               className="group bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl shadow-gray-200/10 dark:shadow-none overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row"
             >
               <div className="p-10 flex-1 space-y-8">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-luxury font-bold text-gray-900 dark:text-white">
-                    {group.name}
+                    {service.name}
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 text-sm font-light leading-relaxed">
-                    {group.description}
+                    {service.description}
                   </p>
                 </div>
                 
                 <div className="flex justify-between items-center py-6 border-y border-gray-50 dark:border-gray-800">
                   <span className="text-3xl font-luxury font-bold text-gray-950 dark:text-white">
                     <span className="text-sm font-sans mr-1 text-gold-600 font-black italic">NT$</span>
-                    {group.price}
+                    {service.price}
                   </span>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                    {group.duration} Minutes
+                    {service.duration} Minutes
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-gold-600">Available Artisans</p>
                   <div className="flex flex-wrap gap-3">
-                    {group.beauticians.map((b) => (
+                    {service.beautician_services.map((bs) => (
                       <Link 
-                        key={b.id}
-                        to={`/beautician/${b.id}`}
+                        key={bs.beauticians.id}
+                        to={`/beautician/${bs.beauticians.id}`}
                         className="group/avatar relative"
-                        title={b.full_name}
+                        title={bs.beauticians.full_name}
                       >
                         <img 
-                          src={b.avatar_url || 'https://via.placeholder.com/40'} 
-                          alt={b.full_name}
+                          src={bs.beauticians.avatar_url || 'https://via.placeholder.com/40'} 
+                          alt={bs.beauticians.full_name}
                           className="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 shadow-lg group-hover/avatar:border-gold-500 transition-all"
                         />
                         <div className="absolute -bottom-1 -right-1 bg-gold-500 text-white p-0.5 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity">
@@ -147,13 +118,13 @@ const Services: React.FC = () => {
 
               <div className="bg-gray-50 dark:bg-gray-800/50 p-10 w-full md:w-64 flex flex-col justify-center gap-4 border-l border-gray-100 dark:border-gray-800">
                 <p className="text-[10px] font-black uppercase tracking-widest text-center text-gray-400 mb-2">Select Artisan to Book</p>
-                {group.beauticians.map((b) => (
+                {service.beautician_services.map((bs) => (
                   <Link
-                    key={b.id}
-                    to={`/booking?serviceId=${b.service_id}&beauticianId=${b.id}`}
+                    key={bs.beauticians.id}
+                    to={`/booking?serviceId=${service.id}&beauticianId=${bs.beauticians.id}`}
                     className="block w-full text-center py-3 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-gray-950 dark:hover:bg-white hover:text-white dark:hover:text-gray-950 transition-all font-bold text-[10px] uppercase tracking-widest"
                   >
-                    {b.full_name}
+                    {bs.beauticians.full_name}
                   </Link>
                 ))}
               </div>

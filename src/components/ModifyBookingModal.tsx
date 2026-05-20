@@ -18,38 +18,27 @@ interface TimeSlot {
   slot_time: string;
 }
 
-interface BeauticianOption extends Beautician {
-  target_service_id: string;
-}
-
 const ModifyBookingModal: React.FC<ModifyBookingModalProps> = ({ booking, isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
-  const [availableBeauticians, setAvailableBeauticians] = useState<BeauticianOption[]>([]);
+  const [availableBeauticians, setAvailableBeauticians] = useState<Beautician[]>([]);
   const [selectedBeauticianId, setSelectedBeauticianId] = useState<string>(booking.beautician_id || '');
   const [selectedDate, setSelectedDate] = useState(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
   const [selectedSlot, setSelectedSlot] = useState<string>('');
 
   // 獲取提供相同服務的其他美容師
   const fetchAlternativeBeauticians = useCallback(async () => {
+    // 透過 beautician_services 關聯表尋找提供同一個 service_id 的美容師
     const { data, error } = await supabase
-      .from('services')
-      .select('beautician_id, id, beauticians(*)')
-      .eq('name', booking.service_name);
+      .from('beautician_services')
+      .select('beauticians(*)')
+      .eq('service_id', booking.service_id);
 
     if (!error && data) {
-      const options: BeauticianOption[] = data
-        .filter(item => item.beauticians)
-        .map(item => {
-          const b = Array.isArray(item.beauticians) ? item.beauticians[0] : item.beauticians;
-          return {
-            ...b,
-            target_service_id: item.id
-          };
-        });
-      setAvailableBeauticians(options);
+      const beauticians = data.map(item => item.beauticians).filter(Boolean) as unknown as Beautician[];
+      setAvailableBeauticians(beauticians);
     }
-  }, [booking.service_name]);
+  }, [booking.service_id]);
 
   // 當 Modal 開啟時，重置狀態
   useEffect(() => {
@@ -67,16 +56,17 @@ const ModifyBookingModal: React.FC<ModifyBookingModalProps> = ({ booking, isOpen
   }, [selectedDate, selectedBeauticianId]);
 
   const fetchAvailableSlots = useCallback(async () => {
-    const currentServiceId = availableBeauticians.find(b => b.id === selectedBeauticianId)?.target_service_id || booking.service_id;
-    
+    if (!selectedBeauticianId) return;
+
     setLoading(true);
     const startDate = new Date(`${selectedDate}T00:00:00`).toISOString();
     const endDate = new Date(`${selectedDate}T23:59:59`).toISOString();
 
+    // 時段現在是綁定在 beautician_id 上
     const { data, error } = await supabase
       .from('time_slots')
       .select('id, slot_time')
-      .eq('service_id', currentServiceId)
+      .eq('beautician_id', selectedBeauticianId)
       .eq('is_booked', false)
       .gte('slot_time', startDate)
       .lte('slot_time', endDate)
@@ -88,7 +78,7 @@ const ModifyBookingModal: React.FC<ModifyBookingModalProps> = ({ booking, isOpen
       setAvailableSlots(data || []);
     }
     setLoading(false);
-  }, [selectedDate, selectedBeauticianId, availableBeauticians, booking.service_id]);
+  }, [selectedDate, selectedBeauticianId]);
 
   useEffect(() => {
     if (isOpen && selectedBeauticianId) {
@@ -101,16 +91,15 @@ const ModifyBookingModal: React.FC<ModifyBookingModalProps> = ({ booking, isOpen
       toast.error('請選擇新時段');
       return;
     }
-
-    const targetBeautician = availableBeauticians.find(b => b.id === selectedBeauticianId);
     
     setLoading(true);
     // 確保參數名稱與 SQL 定義完全一致
+    // 注意：在新的多對多架構中，p_new_service_id 如果不變則傳入原有的 booking.service_id
     const { error } = await supabase.rpc('reschedule_booking', {
       p_booking_id: booking.id,
       p_new_time: selectedSlot,
-      p_new_beautician_id: selectedBeauticianId || null,
-      p_new_service_id: targetBeautician?.target_service_id || null
+      p_new_beautician_id: selectedBeauticianId,
+      p_new_service_id: booking.service_id 
     });
 
     if (error) {
