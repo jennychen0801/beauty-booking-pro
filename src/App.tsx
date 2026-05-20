@@ -39,7 +39,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-300 font-sans selection:bg-gold-200 selection:text-gold-900 text-gray-950 dark:text-white">
+        <div className="min-h-screen transition-colors duration-300 font-sans selection:bg-gold-200 selection:text-gold-900 bg-white dark:bg-gray-950 text-gray-950 dark:text-white">
           <Navbar isDark={isDark} toggleDarkMode={toggleDarkMode} />
           <main>
             <Routes>
