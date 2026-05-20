@@ -17,9 +17,9 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-.gemini/*
-.github/*
+.vscode/
+.gemini/
+.github/
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -28,6 +28,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
 
 # Supabase and Secrets
 .env
